@@ -5,17 +5,17 @@ st.set_page_config(page_title="AI Friend Chat", page_icon="🤖")
 
 st.title("🤖 AI Friend Chat (Powered by Gemini)")
 
-# Configure Gemini API key from Streamlit secrets
+# Configure API key
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# Use a stable model name (supported in free & paid keys)
-model = genai.GenerativeModel("gemini-1.5-flash")
+# ✅ Use v1 model (supported officially)
+model = genai.GenerativeModel(model_name="gemini-1.5-flash-latest")
 
-# Initialize chat session
+# Initialize chat
 if "chat" not in st.session_state:
     st.session_state.chat = model.start_chat(history=[])
 
-# Display chat history
+# Show chat history
 for msg in st.session_state.chat.history:
     with st.chat_message("user" if msg["role"] == "user" else "assistant"):
         if isinstance(msg["parts"][0], str):
@@ -23,20 +23,15 @@ for msg in st.session_state.chat.history:
         else:
             st.markdown(str(msg["parts"][0]))
 
-# Input field for user
+# Chat input
 if prompt := st.chat_input("Say something..."):
-    # Display user message
     st.chat_message("user").write(prompt)
     st.session_state.chat.history.append({"role": "user", "parts": [prompt]})
 
     try:
-        # Generate AI response
         response = st.session_state.chat.send_message(prompt)
         reply = response.text
-
-        # Display AI reply
         st.chat_message("assistant").write(reply)
         st.session_state.chat.history.append({"role": "assistant", "parts": [reply]})
-
     except Exception as e:
         st.error(f"❌ Error: {e}")
